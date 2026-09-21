@@ -1,0 +1,196 @@
+---
+title: "Week 10: Exploring DHS data with {ggplot2}"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    toc: true
+author: "YOUR NAME HERE"
+date: "2024-09-10"
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+# Introduction
+
+Welcome!
+
+The workshop continues with a hands-on approach to data visualization and reviewing some functions you're already familiar with.
+
+This week's lesson notes have been linked below. They can be very helpful for completing the exercise, so feel free to refer to them during the workshop!
+
+-   [Boxplots with {ggplot2}](https://the-graph-courses.github.io/data_on_display_wp/lessons/ls05_boxplots.html)
+
+-   [Visualizing Comparisons and Compositions](https://the-graph-courses.github.io/epi_reports/EPIREP_EN_parts_to_a_whole/EPIREP_EN_parts_to_a_whole.html)
+
+# Set up for the exercise
+
+1.  **First download the repo to your local computer.** To get started, you should download, unzip, and look through the assignment folder.
+
+2.  **Open the** **RStudio Project** by clicking on the relevant *.Rproj* file in the unzipped workshop folder. Make sure you have opened week_10_workshop.Rproj in RStudio by looking at the name of your RStudio window, or in the upper right corner of your screen.
+
+3.  **Open the assignment Rmd.** Navigate to the Files tab in RStudio and open the "rmd" folder. You will be working in the file called "week_10_exercise.Rmd". This Rmd contains both the instructions and the workshop assignment in one file.
+
+4.  **Complete the assignment.** Work through the steps in "week_10_exercise.Rmd". Replace every instance of `"WRITE_YOUR_CODE_HERE"` with your answers. The assignment should be submitted individually, but you are encouraged to brainstorm with partners. Though you are allowed to work with group members, *it is important that all the code you submit has been typed yourself*.
+
+# Load necessary packages
+
+```{r}
+pacman::p_load(
+  janitor,    # for data analysis utilities
+  here,       # to set the working directory
+  haven,      # for reading Stata files
+  tidyverse   # for data manipulation and visualization
+  )
+```
+
+*NOTE: Please read through and run the code in the demo Rmd BEFORE starting this exercise.*
+
+# Data Importation and Cleaning
+
+## Step 1: Choose and import select columns
+
+The code chunk below imports the same variables as presented in the demo. However, we want to augment this by adding five variables related to malaria-knowledge.
+
+Scan through the data dictionary file and determine which five variables correspond to the following agreement statements:
+
+-   Malaria can be fully cured by medicine
+-   Malaria can lead to death
+-   No worry about malaria due to easy treatment
+-   Know people sick with malaria
+-   Only weak children can die from malaria
+
+Then, incorporate these variables into the data import code below.
+
+**HINT:** These variables can be found on pages 225-226 of the data dictionary PDF.
+
+**Note**: make sure ALL letters in the variable names are in **lower case**. For example, if the data dictionary says "S1108BA" you should change the 3 letters to lowercase like this: "s1108ba" when you enter it in `col_select`.
+
+```{r}
+# Import the .dta file and add the 5 malaria knowledge variables
+ir_ng_18_raw <- 
+  __________________(here("data/NGIR7BFL_mini.DTA"),
+                  col_select = c(
+                    # Basic information
+                    v006, v007, v009, v010, v012, v013, 
+                    v024, v025, v106, v130, v190,                     
+                    # Literacy and media
+                    v155, v156, v157, v158, v159, 
+                    
+                    # Fertility and reproductive timing
+                    v201, v212, v213, v511, v531, 
+                    
+                    # Malaria knowledge variables
+                    "WRITE YOUR CODE HERE" 
+                    
+                    ))
+```
+
+## Step 2: Assign variable names
+
+Assign descriptive names to the newly imported variables and then execute the code below.
+
+```{r}
+# Rename variables
+ir_ng_18_renamed <- 
+  ir_ng_18_raw %>% 
+  rename(age = v012,
+         age_group = v013,
+         region = v024,
+         urban_rural = v025,
+         highest_educ = v106,
+         religion = v130,
+         literacy = v155,
+         wealth_index = v190,
+         num_kids = v201,
+         age_first_birth = v212,
+         age_first_cohabitation = v511,
+         age_first_sex = v531, 
+         
+         # Rename malaria knowledge variables
+         "WRITE YOUR CODE HERE" 
+         )
+```
+
+## Step 3: Reveal coded values
+
+With the suitable function from the `{haven}` package, transform all variables into regular R factors.
+
+```{r}
+# Add function to convert from labelled data to regular factors
+ir_ng_18_clean <- 
+  ir_ng_18_renamed %>% 
+  "WRITE YOUR CODE HERE"
+```
+
+**CHECKPOINT**: You should now have 3 data frames in your Environment: `ir_ng_18_raw`, `ir_ng_renamed`, and `ir_ng_18_clean`. Explore the `ir_ng_18_clean` dataset and ensure that the changes from Steps 1 through 3 have been successfully implemented. Value types should been converted to factors and the columns should have meaningful names. From here, the `ir_ng_18_clean` dataset is now ready to use and ready for plotting!
+
+# Data visualization
+
+## Set a global theme
+
+Chose your favorite `{ggplot2}` theme and write code to automatically apply it to all your plots.
+
+```{r}
+# Change the default theme
+"WRITE YOUR CODE HERE"
+```
+
+## Histograms and boxplots for continuous distributions
+
+a.  Choose one of the continuous variables from the dataset, such as `age` or `age_first_birth.` Then, generate a simple histogram of this variable. Make sure to provide the necessary title, labels, etc. to best communicate information to the audience.
+
+```{r}
+# Simple histogram
+"WRITE YOUR CODE HERE"
+```
+
+b.  Now, create a boxplot to show the distribution of the continuous variable you chose earlier. The distribution should be grouped by one of the variables related to knowledge about malaria. Incorporate the `fill` aesthetic to color the boxes. Also adjust the colors, labels, titles, themes, etc. as you please.
+
+```{r}
+# Boxplot comparing groups
+"WRITE YOUR CODE HERE"
+```
+
+## Barplots for discrete distributions
+
+a.  Select one of the categorical variables from the dataset. Proceed to generate a simple bar plot to display the distribution of this variable.
+
+```{r}
+# Simple barplot
+"WRITE YOUR CODE HERE"
+```
+
+b.  Next, adapt your plot above to create a PERCENT-STACKED bar plot. To do this, add the `fill` aesthetic and set it to a malaria knowledge variable of your choosing; for example: `aes(fill = MALARIA_VAR)`. Remember to add the appropriate `position` argument. The final graph should compare how answers to the malaria knowledge survey question varies between groups.
+
+```{r}
+# Percent-stacked barplot
+"WRITE YOUR CODE HERE"
+```
+
+c.  Finally, create a GROUPED bar chart with any two categorical variables of your choice. Adjust the colors, labels, titles, themes, etc. as you please.
+
+```{r}
+# Grouped barplot
+"WRITE YOUR CODE HERE"
+```
+
+# Submission: Upload Rmd file
+
+Once you have finished the tasks above, you should save your answers and upload your assignment Rmd on the workshop webpage. You should upload just one Rmd file with your answers (do not upload the knitted HTML or a zipped folder). Make sure to include your name in the YAML header at the top of the script.
+
+The due date for the assignment is **Friday, September 13th at 23:59 PM GMT.**
+
+# Bonus challenge: Donut charts
+
+Represent the data from your grouped bar chart as a series of donut charts.
+
+HINT: The `facet_wrap()` function from `{ggplot2}` will come in handy.
+
+```{r}
+# Bonus challenge!
+"WRITE YOUR CODE HERE"
+```

@@ -1,0 +1,251 @@
+---
+title: "Workshop Exercise: Joining and Pivoting"
+author: "YOUR NAME HERE" # Remember to add your name!
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+# Introduction
+
+In this workshop, you'll learn how to clean and analyze HIV and AIDS data across different countries and years.
+We will start with raw datasets containing estimates of new and total HIV cases per country-year.
+The goal is to clean and merge these datasets with population data.
+
+Please refer to the lesson notes to aid you in the workshop exercise:
+
+-   [Intro to Pivoting Data](https://the-graph-courses.github.io/data_untangled_wp/lessons/ls07_pivoting.html)
+-   [Intro to Joining Datasets](https://the-graph-courses.github.io/fdar/FDAR_EN_joining_1/FDAR_EN_joining_1.html)
+
+# Load Libraries
+
+```{r}
+if(!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, here, countrycode, esquisse)
+```
+
+# Data Import
+
+We will work with two raw datasets, each containing estimates per country-year.
+These data were accessed from the Gapminder foundation, at [www.gapminder.org/data](https://www.gapminder.org/data).
+
+1.  **People living with HIV:** This dataset contains the total number of people currently infected with HIV (*data/hiv_prevalence.csv*).
+2.  **New HIV infections:** This dataset provides the total number of people newly infected with HIV during a given year (*data/hiv_incidence.csv*).
+
+Load the datasets into R using `read_csv()`.
+
+```{r}
+# Load raw data from specified paths
+total_hiv_raw <- read_csv(here("data/hiv_prevalence.csv"))
+new_hiv_raw <- read_csv(here("data/hiv_incidence.csv"))
+```
+
+# Explore the Datasets
+
+Use functions like `head()`, `View()`, and `summary()` to inspect the datasets.
+
+```{r}
+# Your code here
+```
+
+# Data Pivoting
+
+Now that we have imported the data it's time to pivot it.
+
+The datasets are currently in wide format, with each year as a separate column, something like this:
+
+| country     | 1990  | 1991  | 1992  | 1993  | 1994  |
+|-------------|-------|-------|-------|-------|-------|
+| Afghanistan | 600   | 600   | 1000  | 1100  | 1200  |
+| Angola      | 33000 | 39000 | 46000 | 54000 | 62000 |
+| Argentina   | 27000 | 31000 | 35000 | 39000 | 43000 |
+| Armenia     | 350   | 600   | 600   | 600   | 1000  |
+| Australia   | 12000 | 12000 | 12000 | 11000 | 11000 |
+| Austria     | 600   | 600   | 1000  | 1300  | 1500  |
+
+We need to convert this to long format, where each row represents a single year-country combination.
+For example:
+
+| country     | year | cases |
+|-------------|------|-------|
+| Afghanistan | 1990 | 600   |
+| Afghanistan | 1991 | 600   |
+| Afghanistan | 1992 | 1000  |
+| Afghanistan | 1993 | 1100  |
+| Afghanistan | 1994 | 1200  |
+
+## Instructions for Pivoting `new_hiv_raw` Data
+
+Reshape the `new_hiv_raw` dataset by converting the columns that represent different years into a new column called `year`, and place the corresponding values into a new column called `new_cases`.
+
+**HINTS**:
+
+1.  Use `pivot_longer()` on `new_hiv_raw`.
+2.  Exclude the `country` and `country_code` columns from being pivoted by specifying `cols = -c(country, country_code)`.
+3.  Set the names of the new columns inside `pivot_longer()` using:
+    -   `names_to = "year"` to label the column that will store the years.
+    -   `values_to = "new_cases"` to store the values representing new HIV cases under the `new_cases` column.
+
+```{r}
+new_hiv_long <- "WRITE_YOUR_CODE_HERE"
+
+new_hiv_long
+```
+
+------------------------------------------------------------------------
+
+## Instructions for Pivoting `total_hiv_raw` Data
+
+In a similar manner, pivot the `total_hiv_raw` dataset to a long format.
+Convert the year columns into a new column called `year` and the counts into `total_cases`.
+
+```{r}
+total_hiv_long <- "WRITE_YOUR_CODE_HERE"
+
+total_hiv_long
+```
+
+**CHECKPOINT:**\
+After performing these steps, make sure that you have two reshaped datasets:
+
+-   `new_hiv_long` with **1704 rows and 4 columns**: `country`, `country_code`, `year`, and `new_cases`.
+
+-   `total_hiv_long` with **1776 rows and 4 columns**: `country`, `country_code`, `year`, and `total_cases`.
+
+# Joining the HIV Datasets
+
+Now that both datasets are in long format, we can join them.
+Note that you need to use the `country`, `country_code`, and `year` columns as the keys (`by = c("country", "country_code", "year")`).
+
+Use `full_join()` so that we can keep as much information as possible.
+
+```{r}
+hiv_data_combined <- "WRITE_YOUR_CODE_HERE"
+
+hiv_data_combined
+```
+
+**CHECKPOINT:** The combined dataset should have columns for `country`, `country_code`, `year`, `total_cases`, and `new_cases`.
+
+# Add Population Data
+
+The `world_bank_pop` dataset from **tidyr** contains information on population per year from 2000 to 2017.
+
+```{r}
+tidyr::world_bank_pop # Run this code to see the dataset
+```
+
+Note that there are several measures of population described in the `indicator` column.
+We are interested in the total population of each country, which is the `SP.POP.TOTL` indicator.
+
+Additionally, note that the `country` column doesn't have full country names, but the 3-letter country codes.
+This will make it easier to join with our HIV dataset, since country codes are consistent across datasets (unlike full country names).
+
+## Filter and Pivot Population Data
+
+Next, complete the following transformations on the `world_bank_pop` dataset:
+
+-   Filter to just the `SP.POP.TOTL` indicator
+
+-   Pivot the data to a long format.
+
+-   Rename the "`country`" column to "`country_code`" so that we can join it properly later on.
+
+-   Remove the `indicator` column.
+
+-   Store the result as `population_long`.
+
+```{r}
+population_long <- tidyr::world_bank_pop %>% 
+  filter() %>% 
+  pivot_longer() %>% 
+  rename() %>% 
+  select()
+
+population_long
+```
+
+**CHECKPOINT:**\
+After performing these steps, make sure that you have a dataset named `population_long` with **4788 rows and 3 columns**: `country_code`, `year`, and `population`.
+
+## Join Population Data with HIV Data
+
+Use `left_join()` to add the population information to your HIV data combined dataset (the HIV data should be the left or primary dataset).
+You should use both "country_code" and "year" as keys.
+
+```{r}
+# Your code here
+hiv_data_combined_pop <- "WRITE_YOUR_CODE_HERE"
+  
+hiv_data_combined_pop
+```
+
+**CHECKPOINT:** Verify that `hiv_data_combined_pop` now contains a `population` column.
+
+## Calculate Incidence Rate and Prevalence Rate
+
+Lastly, calculate the incidence rate and prevalence rate per 100,000 people:
+
+-   **Incidence Rate** = New Cases / Population \* 100000
+-   **Prevalence Rate** = Total Cases / Population \* 100000
+
+```{r}
+hiv_data_final <- "WRITE_YOUR_CODE_HERE"
+
+hiv_data_final
+```
+
+**CHECKPOINT:** `hiv_data_final` should have **1776 rows and 8 columns**: `country`, `country_code`, `year`, `total_cases`, `new_cases`, `population`, `incidence_rate` and `prevalence_rate` (the names don't need to be exact matches as long as the data is equivalent).
+
+# Plot Incidence Rates
+
+Now, you'll select 3 countries of your choice and plot their incidence rate over time.
+
+Before passing your data into `esquisser()`, you should:
+
+-   Filter the data to narrow down the countries. Use the syntax `filter(country %in% c("COUNTRY1", "COUNTRY2", "COUNTRY3")`.
+-   Convert the `year` column to a `numeric` type with `mutate()` and `as.numeric()`.
+
+**HINT**: Some countries have a many years with missing data, especially for `new_cases`.
+View and check your `hiv_data_combined_pop` dataset to ensure that your chosen countries are not full of NAs.
+
+```{r}
+# Create data subset with 3 countries
+hiv_data_mini <- "WRITE_YOUR_CODE_HERE"
+
+hiv_data_mini
+```
+
+Now, use `hiv_data_mini` and plot incidence rates over time.
+
+**HINT**: Put `year` on the x-axis, `incidence_rate` on the y-axis, and color by `country`.
+Use a line graph for best visualisation.
+
+```{r}
+#esquisser(hiv_data_mini)
+
+"PASTE_YOUR_CODE_HERE"
+```
+
+# Plot Prevalence Rates
+
+Again, use `hiv_data_mini` and plot their prevalence rates over time, using a line graph.
+
+```{r}
+# Your code here
+```
+
+# Optional Ungraded Challenge
+
+In this challenge, you will:
+
+1.  **Add Regional Information:** Use the `countrycode` package to get regional (continent) information for each country.
+2.  **Merge Continent Data:** Merge the continent data with your dataset.
+3.  **Identify Highest Prevalence Rates per Continent:** Find the countries with the highest prevalence rate in 2011 for each continent.
+4.  **Create a Bar Chart:** Make a bar chart comparing the 2011 prevalence rates of these countries.
+
+```{r}
+# Your code here
+countrycode::codelist %>%
+ select(country.name.en, continent)
+```

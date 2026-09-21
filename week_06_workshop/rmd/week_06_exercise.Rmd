@@ -1,0 +1,230 @@
+---
+title: "Workshop 6: Grouping, Summarizing and Plotting"
+output: prettydoc::html_pretty
+author: "AUTHORS NAME HERE"
+---
+
+# Data Preparation
+
+## Load Packages
+
+To get started, **load in the needed packages**: {tidyverse}, {here}, {janitor}, and {esquisse}.
+
+```{r}
+# Load the necessary packages
+```
+
+## Import Data
+
+Now, **read in the india_tuberculosis dataset into R from your data folder**. The data frame you import should have 880 rows and 21 columns. Remember to use the `here()` function to allow your Rmd to use project-relative paths.
+
+```{r}
+# Import the CSV file
+# Make sure imported data looks OK and familiarize yourself with the variables
+tb_raw <- "YOUR CODE HERE"
+```
+
+## Clean Column Names
+
+The names of many columns in this dataset have spaces and symbols in them (e.g., `Treatment initiation delay (in days)`), which is not R-friendly.
+
+Use `janitor::clean_names()` to give your variable names a clean and consistent format.
+
+```{r}
+# Clean variable names
+tb_clean1 <- janitor::clean_names(tb_raw)
+```
+
+**Checkpoint**: The data frame should contain 880 rows and 21 columns. Column/variable names should now be converted to snake case. You can run `names(tb_clean1)` to print and check the variable names.
+
+## Calculate Total Cost
+
+Each patient record notes the location and cost of up to three locations. Add together these costs (`first_visit_cost`, `second_visit_cost`, and `third_visit_cost`) to create a `total_cost` variable.
+
+```{r}
+# Complete the code to calculate total cost
+tb_clean2 <- tb_clean1 %>% 
+```
+
+# Investigating Healthcare Costs by Education Level
+
+## Reorder Education Levels
+
+Before moving further, let's take a closer look at the `education` variable in our dataset:
+
+```{r}
+# count() lets you quickly count the unique values of variables
+count(tb_clean2, education)
+```
+
+You'll notice that education levels are ordered alphabetically by default! However, in this case, it would be more useful to reorder the education levels so that they are arranged in a chronological order.
+
+Complete the code below to reorder the education levels by converting the `education` variable into a factor with the levels defined in a specific order:
+
+```{r}
+tb_clean3 <- tb_clean2 %>%
+  mutate(education = __________(education,
+    _____________ = c(
+      "No Education",
+      "Primary",
+      "Middle",
+      "Secondary",
+      "Higher Secondary",
+      "Graduate",
+      "Graduate & Above",
+      "Missing"
+    )
+  ))
+```
+
+We will use the newly transformed `education` variable for grouping, summarizing, and plotting below.
+
+## Table of Costs by Education Level
+
+Let's compare the cost of treatment at different health facilities using a summary table. Use `{dplyr}` verbs to group by education level and create a summary table with two variables:
+
+- The number of patients in each education level
+- The mean total cost for each education level
+
+Store the resulting tibble as an object called `edu_cost_table`.
+
+```{r}
+# Create summary table
+edu_cost_table <- tb_clean3 %>% 
+```
+
+Reorder the rows of the summary table to go from highest to lowest mean cost. You can use the `arrange()` function to do this.
+
+```{r}
+# Reorder summary table
+```
+
+Below, we will visualize the data with a plot to see if there is a relationship between education level and healthcare costs.
+
+## Visualize Costs by Education Level
+
+Using `esquisser()` and the costs summary table you created earlier, create a bar plot of mean costs, by education level.
+
+```{r}
+# Use esquisser() to create a bar plot
+```
+
+Write an interpretation of the plot. Did people with more education spend more on treatment?
+
+When you are satisfied with your plot, use `ggsave()` to save your plot above in a new folder called "outputs". Remember to specify the file type and dimensions of the image you want to export.
+
+```{r}
+# Save your plot(s)
+```
+
+
+# Investigating Healthcare Costs by Age Group
+
+## Create an `age_group` Variable
+
+The `age` variable records the age of each patient in years. We want to classify the patients into four approximately equally-sized age groups for further analysis.
+
+First, determine the quantiles of the `age` variable to decide the cutoffs for each age group:
+
+```{r}
+# Determine quantiles of age
+quantile(tb_clean3$age)
+```
+
+Based on the quantiles, you should obtain the following four age groups with approximately equal numbers of patients:
+
+- 18-36
+- 37-47
+- 48-57
+- 58+
+
+Use `mutate()` and `case_when()` to create an `age_group` variable using the categories above. Save the updated dataset.
+
+```{r}
+# Create age_group variable
+tb_clean4 <- tb_clean3 %>% 
+```
+
+Now, check if we met our goal of having a similar number of patients in each age group (use `count()` or `tabyl()`):
+
+```{r}
+# Tabulate age groups
+```
+
+**Checkpoint**: If you classified the age groups correctly, you will see that each age group has approximately 24-26% of the patients.
+
+## Table of Costs by Age Group
+
+Next, summarize the total healthcare costs by age group. Use `{dplyr}` verbs to group by `age_group` and create a summary table with two variables:
+
+- The number of patients in each age group
+- The mean total cost for each age group
+
+Store the resulting tibble as an object called `age_cost_table`.
+
+```{r}
+# Create summary table for age groups
+age_cost_table <- tb_clean4 %>% 
+```
+
+Reorder the rows of the summary table to go from highest to lowest mean cost. You can use the `arrange()` function to do this.
+
+```{r}
+# Reorder summary table
+```
+
+Below, we will visualize the data with a plot to see if there is a relationship between age group and healthcare costs.
+
+## Visualize Costs by Age Group
+
+Using `esquisser()` and the costs summary table you created earlier, create a bar plot of mean costs by age group.
+
+```{r}
+# Create bar plot for age groups
+```
+
+Write an interpretation of the plot. Did people in different age groups spend different amounts on treatment?
+
+When you are satisfied with your plot, use `ggsave()` to save your plot in a new folder called "outputs". Remember to specify the file type and dimensions of the image you want to export.
+
+```{r}
+# Save your plot(s)
+```
+
+# Wrap Up
+
+That's it for this assignment! We will choose some people to present their work during the workshop. If you would like to share your results with the class, please let an instructor know.
+
+The group representative should prepare to screenshare and give a short (3-4 sentence) presentation.
+
+Choose and highlight one aspect of your code or plot that would be helpful and interesting to the class. For example, you can choose a question that your group found especially tricky, and explain how you found the solution. Or you can display one of your plots, and share some tips for additional customization.
+
+# Bonus Challenge (Optional and Ungraded)
+
+If you finish early and have extra time, you can explore and transform the dataset further.
+
+We can look at two types of health facilities in the dataset: private and public (government).
+
+```{r}
+# List of 9 healthcare locations
+```
+
+Note: PHC = primary health center, GH = govt hospital etc.
+
+## Comparing Delays in Public vs Private Health Facilities
+
+Let's create a new variable indicating whether a healthcare location is private or public. We can do this using the `str_detect()` function from the `{stringr}` package of tidyverse.
+
+```{r}
+tb_clean5 <- tb_clean4 %>%
+  mutate(first_visit_type = case_when(
+    str_detect(first_visit_location, "Pvt") ~ "Private",
+    TRUE ~ "Public"
+  ))
+```
+
+Inspect the new variable in `tb_clean5`.
+
+Your assignment for this challenge is to summarize delays in treatment, and compare the length of delays between private and public health facilities.
+
+You can start by making summary table of `treatment_initiation_delay_in_days` or `health_sys_delay_in_days`, grouped by `first_visit_type`. Then visualize the data and draw insights from your findings.

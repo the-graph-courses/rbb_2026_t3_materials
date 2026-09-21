@@ -1,0 +1,49 @@
+---
+title: "Example Report: Motorcycle Accidents in Colombia"
+output: prettydoc::html_pretty
+author: "GRAPH Courses team"
+---
+
+This document is a model example of what a report for this assignment can look like. You may use this document as a guide on how to write your report.
+
+# Road Injuries of Motorcyclists in Colombia 
+
+```{r setup, echo = FALSE, message = FALSE}
+# Load packages
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, here, janitor, esquisse, flextable)
+```
+
+```{r import, echo = FALSE, message = FALSE}
+# Import CSV
+col_accidents <- read_csv(here("data/EXAMPLE_moto_accidents_colombia.csv"))
+# Clean variable names
+col_accidents_clean <- clean_names(col_accidents)
+```
+
+The dataset analysed in this report provides information about `r nrow(col_accidents_clean)` deaths caused by motorcycle accidents in Medellín, a Colombian city, from 2012 to 2015. The data is sourced from medical and police certificates and can be accessed [here](https://zenodo.org/record/4836304).
+
+## Age group distribution
+
+I chose to look at the age group distribution of fatalities from motorcycle accidents. The victims ranged from `r min(col_accidents_clean$age)` to `r max(col_accidents_clean$age)` years old.
+
+```{r age-plot, echo = FALSE}
+age_group_plot <-
+  col_accidents_clean %>%
+  ggplot() +
+  aes(x = age_group) +
+  geom_bar(fill = "#678BCB") +
+  labs(title = "Age group distribution of deaths")
+age_group_plot
+```
+
+The table below summarizes the data:
+
+```{r age-table, echo = FALSE}
+freq_df <- tabyl(col_accidents_clean, age_group)
+flex <- flextable(freq_df)
+flex_with_caption <- set_caption(flex, caption = "Age group distribution of deaths")
+flex_with_caption
+```
+
+The 5-year age group with the most deaths was the 20 to 24 age group.

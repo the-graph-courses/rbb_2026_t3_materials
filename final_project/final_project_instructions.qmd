@@ -1,0 +1,169 @@
+---
+title: "RBB Capstone Project"
+author: "GRAPH Courses Team"
+format:
+    html:
+        toc: true
+        embed-resources: true
+---
+
+# **Summary**
+
+For your final project, you will use Demographic and Health Survey (DHS) data to create an Rmarkdown report on a country and topic of your choice.
+
+The report should:
+
+- Analyze data from one of the country-level DHS women's individual recode survey datasets provided to you. (Alternative datasets are also allowed; see the Appendix.)
+
+- Contain a minimum of 400 words of descriptive text. (Figure and table captions count towards this total, but code and code comments do not.)
+
+- Include at least four meaningful plots with interpretations, using at least two different geom functions, and one well-formatted data table.
+
+- Be polished and professional, suitable for a public audience.
+
+- Adhere closely to the rubric outlined in the Appendix.
+
+::: {.callout-important}
+## Special instructions for UNODA/BWC-sponsored students
+
+If your place in this course is sponsored by the UNODA BWC programme, your final project must include at least one biosecurity-relevant DHS variable from [this list](https://github.com/the-graph-courses/misc_public/blob/main/unoda/dhs_biosecurity_relevant_variables.md){target="_blank"}.
+
+If you are not sure whether this applies to you: this usually means students who are on a 100% scholarship and did not pay a course fee.
+:::
+
+# **Inspiration**
+
+Your choice of topic is entirely up to you. One common theme is to pick a specific variable of interest (e.g. a specific family planning behavior), then show how that varies across socio-demographic groups (e.g. age, education, wealth, etc.).
+
+The following example reports from past students use an approach similar to this:
+
+- [Experience of Domestic Violence in Egypt](https://the-graph-courses.github.io/rbb_q4_2024_materials/exemplar_final_projects/assignment_101546_171194340769_Submission_Anastasiia.html){target="_blank"}
+
+- [Participation in Cancer screening in Colombia](https://the-graph-courses.github.io/rbb_q4_2024_materials/exemplar_final_projects/assignment_101546_171190968623_Capstoneproject_TDoerr.html){target="_blank"}
+
+- [Family Planning in the DRC](https://the-graph-courses.github.io/rbb_q4_2024_materials/exemplar_final_projects/assignment_95694_170315438145_Final_Project_HolyAndriamasy.html){target="_blank"}
+
+- [Nutritional Status of Women in Ethiopia](https://the-graph-courses.github.io/misc_public/rbb_showcase_projects/amare_abera_rbb_final.html)
+
+- [Women's BMI in Tanzania](https://the-graph-courses.github.io/misc_public/rbb_showcase_projects/lopa_rbb_final.html)
+
+**Exception for UNODA/BWC-sponsored students:** your project must include at least one of the health and disease-related DHS variables listed [here](https://github.com/the-graph-courses/misc_public/blob/main/unoda/dhs_biosecurity_relevant_variables.md){target="_blank"}. Ideally, this should be the main variable of interest that you compare across socio-demographic groups.
+
+# **Step 1: Get the data, review the variables, and pick a topic**
+
+We have compiled a subset of DHS data for you: the latest women's recode datasets for most countries surveyed since 2003.
+
+**To access these, visit this [link](https://drive.google.com/drive/folders/1J0gw4qpfbB8bYFbXx8QcsQEWgJSVwp_P?usp=share_link){target="_blank"}.** Pick a country, download its data and unzip.
+
+Then create a new RStudio project for your analysis and place the unzipped files in the "data" subfolder of your project.
+
+Of the files in the unzipped folder, the main ones to pay attention to are:
+
+-   the .DTA file. This is the main survey data file that you will import into R.
+
+-   the .MAP file. This is a data dictionary. It can be opened within RStudio. It contains the names of variables (e.g. V002) and their labels (e.g. Household number), as well as the possible values for factor variables. You can use this file to find a topic for your analysis. If you are working on a topic like HIV, you might search the .MAP file for the word "HIV", then peruse the relevant variables.
+
+-   the .DO file. You need this because the variables in the .MAP data dictionary do not always match the real column names. The .DO file lists the column names *exactly* as found in the raw data. This is also a text file that can be opened with RStudio.
+
+    This file is particularly helpful for variables that pertain to children. For example the variable B0 indicates whether the child of a surveyed woman is a twin. In the .MAP file, this is listed as B0, but in the .DO file and in the dataset, you will only find the variable names `b0_01`, `b0_02` and so on, potentially up to `b0_20`, with each variable pertaining to one of the children of the surveyed woman. (To analyze such variables, you may need to pivot and do some additional data wrangling.)
+
+# **Step 2: Import your dataset into R**
+
+To import the .DTA file, use the `read_dta()` function from the {haven} package. If importing the entire dataset takes too long, use the `col_select` argument of `read_dta()` to import only select columns. E.g.:
+
+```{r eval = F}
+# select three variables by name
+ir_raw <- haven::read_dta(here("data/NGIR7BFL.DTA"),
+    col_select = c(caseid, v000, v001)
+)
+```
+
+NOTE: Variable names listed in the .MAP file are in uppercase (V001) but in the .DTA file they are in lowercase. So please convert ALL letters of variable names to lowercase in your code.
+
+If R is unable to find some column you have selected, please check the .DO file.
+
+Another note on importing data: the `read_dta()` function reads in factor data as a special type called **labelled** data. This can be problematic for later analysis, so we recommend converting to regular R factors with `haven::as_factor()`. For example:
+
+```{r eval = F}
+ir_converted <-
+    ir_raw %>%
+    haven::as_factor()
+```
+
+# **Step 3: Write up your analyses**
+
+With your data and topic in hand, you can begin your analysis in earnest.
+
+Your topic and variables may change as you work - this is normal.
+
+Remember to review the rubric and past examples for guidance.
+
+# **Step 4: Export and submit your work**
+
+Once your work is done, to submit it you should:
+
+-   Name/rename your Rmd file as `firstname_lastname_rbb_final.Rmd`.
+
+-   Knit your Rmd to one of the following formats: HTML, PDF, or DOCX. The output should also be called `firstname_lastname_rbb_final`
+
+-   Upload your documents to the submission page.
+
+# **Appendix 1: Rubric**
+
+We will be using the following rubric to evaluate your work. You should closely refer to this list and make sure to fulfill each requirement!
+
+### **Data Wrangling (35%)**
+
+Demonstrate the use of appropriate data wrangling techniques to prepare the data for analysis.
+
+**Importing and cleaning DHS data**: Use the {haven} package to import and convert variables from the DHS dataset, and rename variables appropriately.
+
+**Competency with `{dplyr}`**: Demonstrate proficiency in data wrangling by using AT LEAST four of these eight functions covered in the data wrangling chapter: `select()`, `filter()`, `mutate()`, `case_when()`, `group_by()`, `summarize()`, `pivot_wider()`, and `pivot_longer()`.
+
+### **Data Visualization (35%)**
+
+**Competency with `{ggplot2}`**: Include AT LEAST four plots and use AT LEAST two different `geom` functions.
+
+**Quality and professionalism**: Ensure that figures are clear, informative, and aesthetically pleasing. Add appropriate titles and clean up any messy text labels on your figures. We recommend using a consistent `theme` and color scheme to maintain a professional look.
+
+**Tables**: Include AT LEAST one [display table](https://the-graph-courses.github.io/r_foundations_wp/lessons/ls06_rmarkdown.html#74_Display_tables) created with one of the following packages: `{flextable}`, `{gt}`, or `{reactable}`.
+
+### **Use of Rmarkdown (20%)**
+
+Demonstrate the ability to use R Markdown to create a professional document. Ensure appropriate formatting of header levels and R Markdown features. Apply suitable [chunk options](https://the-graph-courses.github.io/r_foundations_wp/lessons/ls06_rmarkdown.html#72_R_code_chunk_options) to show or hide code outputs in the final document.
+
+### **Good Programming Practices (10%)**
+
+**Syntax and code formatting**: Write clean, well-organized code that is easy to read and understand. This includes using appropriate indentation, adding comments, maintaining neat piping, and choosing clear, descriptive variable names.
+
+**Project folder structure**: Assign an appropriate name to your project, and organize your files in sensible subfolders (e.g., data, images, etc.). Review the [RStudio Projects lesson](https://the-graph-courses.github.io/r_foundations_wp/lessons/ls05_projects.html){target="_blank"} to refresh your memory.
+
+# **Appendix 2: More information about the DHS**
+
+The Demographic and Health Surveys (DHS) are a series of standardized surveys conducted periodically in developing countries that collect data on various aspects of population, health, and nutrition.
+
+You can learn more about the DHS program and the various surveys they run by watching the following [video](https://www.youtube.com/watch?v=abP6xeb50Do){target="_blank"}. To hear about the different types of data the DHS collects, you can watch the following [video](https://www.youtube.com/watch?v=BmiSDPebmgc){target="_blank"}.
+
+Finally, to see the kind of reports that are created from the DHS surveys, visit this [page](https://dhsprogram.com/publications/index.cfm){target="_blank"}.
+
+# **Appendix 3: Dos and Don'ts**
+
+-   [***Don't***]{style="color: red;"} leave spelling and grammar mistakes in your final report. ChatGPT is a fast and easy tool for proofreading.
+
+-   [***Don't***]{style="color: red;"} include code chunks in the final document (your knitted report)! Use `echo = F` as needed to hide code.
+
+-   [***Do***]{style="color: green;"} structure your report with section headings that have a logical flow (e.g., Introduction, Aims, Findings). You can also use non-traditional section titles like in [this](https://dhsprogram.com/pubs/pdf/AB20/AB20.pdf){target="_blank"} DHS analysis brief.
+
+# **Appendix 4: Other FAQs**
+
+**My percentages and numbers differ slightly with those seen in the official DHS publications. What is going on?**
+
+This is because official reports use weighted analysis, which we have not yet taught you. This is okay. For those of you interested, you can find a small example of weighted survey analysis [here](https://github.com/the-graph-courses/rbp_cohort_0_final_assessment/blob/main/scripts/example_of_weighted_survey_analysis.R){target="_blank"}.
+
+**Can I use data from a different survey than the Demographic and Health Survey (DHS)?**
+
+Yes, but you will first need to obtain permission from one of our instructors.
+
+**Can I create a dashboard using flexdashboard instead of a flat HTML/PDF document?**
+
+Yes. Any Rmarkdown-based format is acceptable!

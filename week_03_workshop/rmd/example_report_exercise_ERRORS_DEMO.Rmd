@@ -1,0 +1,42 @@
+---
+title: "Example Report: Motorcycle Accidents in Colombia"
+output: prettydoc::html_pretty
+author: "GRAPH Courses team"
+---
+
+We'll use this document to show you some common errors and issues you might encounter when writing your report. The issues will be debugged in a live interactive session during class.
+
+# Road Injuries of Motorcyclists in Colombia 
+
+```{r setup}
+# Load packages
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, here, janitor, esquisse)
+```
+
+```{r import-data}
+col_accidents <- read_csv(here("data/EXAMPLE_moto_accidents_colombia.csv"))
+col_accidents_clean <- col_accidents %>% clean_names()
+```
+
+The dataset analysed in this report provides information about `r nrow(col_accidents_clean)` deaths caused by motorcycle accidents in Medellín, a Colombian city, from 2012 to 2015. 
+
+## Age group distribution
+
+```{r age-plot}
+esquisser(col_accidents_clean)
+
+age_group_plot <-
+  col_accidents_clean %>%
+  ggplot() +
+  aes(x = age_group) +
+  geom_bar(fill = "#678BCB") +
+  labs(title = "Age group distribution of deaths")
+```
+
+```{r age-table}
+freq_df <- tabyl(col_accidents_clean, age_group)
+flex <- flextable(freq_df)
+flex
+```
+

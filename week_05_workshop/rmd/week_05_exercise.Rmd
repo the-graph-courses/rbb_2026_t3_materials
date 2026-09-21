@@ -1,0 +1,267 @@
+---
+title: "Workshop: Creating and Transforming Variables"
+output: prettydoc::html_pretty
+author: "AUTHOR_NAME_HERE"
+---
+
+# Introduction
+
+Welcome!
+
+For this workshop, you'll be cleaning and modifying a dataset with functions like `select()`, `rename()`, `mutate()`, and `case_when()`. 
+
+These have been covered in the prework material of the "Data Wrangling/Manipulation" chapter. 
+
+You can review these on the course website or at our course textbook [here](https://datawithr.com). The "Selecting and renaming columns", "Filtering rows", "Mutating columns" and "Conditional mutating" chapters will be helpful.
+
+# Load packages and data
+
+To get started, **load in the needed packages**: {tidyverse}, {here}, {janitor}, and {esquisse}.
+
+```{r}
+# Load packages
+if(!require(pacman)) install.packages("pacman")
+"WRITE_YOUR_CODE_HERE"
+```
+
+Now, read in the dataset called `physical_activity.csv` from your data folder and save it as `pa_raw`.
+
+It should have 142 rows and 9 columns. Remember to use the `here()` function to use project-relative paths.
+
+```{r}
+# Import CSV
+pa_raw <- "WRITE_YOUR_CODE_HERE"
+```
+
+Next, **remove the first two variables of the `pa_raw` data frame**, as they are not relevant to our analysis. Save the subset as `pa_mini`.
+
+```{r}
+# Subset data frame
+pa_mini <- "WRITE_YOUR_CODE_HERE"
+```
+
+Now, **view the first few rows of the new dataset** and compare it to the variable definitions below.
+
+```{r}
+head(pa_mini)
+```
+
+Your data should have 7 variables: 
+
+- `sex`: male or female 
+- `status`: adult (Adulte) or child (Enfant) 
+- `bmi`: body mass index 
+- `sedentary_ap_s_day`: sedentary behaviour (seconds/day) 
+- `light_ap_s_day`: light physical activity (seconds/day) 
+- `mvpa_s_day`: moderate to vigorous physical activity (seconds/day) 
+- `oms_recommendation`: whether or not WHO recommendations for physical activity are met (OMS is the French name for WHO)
+
+# Clean data with {dplyr}
+
+## Step 1: Examine data classes
+
+Before jumping into wrangling or plotting, let's think about the types of variables in our dataset. 
+
+Check the data classes that were automatically assigned to each variable with `summary()` or `glimpse()`.
+
+```{r}
+summary(pa_mini)
+glimpse(pa_mini)
+```
+
+Notice that 4 of your variables are of class **character**, but they should be **numeric** (e.g. `bmi`). 
+
+This is because those variables have some words in them. Can you spot those words when you view the dataset?
+
+We'll need to convert these variables to numeric so that we can perform calculations on them.
+
+Additionally, 3 variables of class "character" should be converted to factors. 
+
+We don't absolutely need to convert to factors for the analyses we're doing in this workshop, but it is good practice, and will be useful for future analyses.
+
+## Step 2: Convert variables to correct type
+
+Now, complete the conversion code by filling in the blanks below.
+
+Note: You may get a warning message that NAs were introduced to the data. This is what we want to do in this case, so you can disregard the message. 
+
+```{r}
+# Change variables' type
+pa_clean <- pa_mini %>%
+  ______(sex = ________(sex),
+         ______ = as.factor(status),
+         ___ = as.numeric(bmi),
+         sedentary_ap_s_day = __________(sedentary_ap_s_day),
+         light_ap_s_day = as.numeric(__________),
+         __________ = as.numeric(mvpa_s_day),
+         oms_recommendation = ________(oms_recommendation)
+  )
+
+```
+
+Now, use `summary()`, `glimpse()` or `View()` again to check the data classes. 
+
+Notice that in your new numeric columns, the words have been replaced with `NA`. This is what the warning message was about.
+
+```{r}
+# Double check that data classes are correct
+"WRITE_YOUR_CODE_HERE"
+```
+
+## Step 3: Cleaning variables
+
+Next, notice that the `status` variable currently uses the French terms "Adulte" and "Enfant". 
+
+```{r}
+# Run this code to check the values of status
+count(pa_clean, status)
+```
+
+Use `mutate()` and `case_when()` to transform the `status` variable by replacing "Adulte" with "Adult" and "Enfant" with "Child".
+
+Save the updated dataset as `pa_clean2`.
+
+```{r}
+pa_clean2 <- pa_clean %>%
+  "WRITE_YOUR_CODE_HERE"
+```
+
+Now, rename `oms_recommendation` to `who_recommendation` (OMS is French for WHO). Save the updated dataset as a new data frame called `pa_clean3`.
+
+```{r}
+pa_clean3 <- pa_clean2 %>% 
+  "WRITE_YOUR_CODE_HERE"
+```
+
+## Step 4: Convert the physical activity variables
+
+There are 3 physical activity variables: sedentary behavior (`sedentary_ap_s_day`), light physical activity (`light_ap_s_day`), and moderate to vigorous physical activity (`mvpa_s_day`). 
+
+These variables are currently measured in seconds per day.
+
+However, the [WHO recommendations](https://apps.who.int/iris/bitstream/handle/10665/337001/9789240014886-eng.pdf) for physical activity are in minutes per week, so we want to align with these measures. 
+
+To do this, complete the following manipulations:
+
+1. Use `mutate()` to create new variables called `sedentary_ap_m_wk`, `light_ap_m_wk`, and `mvpa_m_wk` that are in minutes per week.
+
+2. Remove the previous seconds per day variables.
+
+To figure out whether your conversions are correct, you might want to think about how reasonable the values are. How many minutes per week is reasonable for light and moderate to vigorous physical activity?
+
+Save the updated dataset as a new data frame called `pa_clean4`.
+
+```{r}
+pa_clean4 <- pa_clean3 %>%
+  "WRITE_YOUR_CODE_HERE"
+```
+
+## Step 5: Combine physical activity variables
+
+Create a new column that adds light physical activity and moderate to vigorous physical activity, and call it `total_pa_m_wk`. 
+
+This should give us the total amount of activity in minutes per week. 
+
+Save the updated dataset as a new data frame called `pa_clean5`.
+
+```{r}
+pa_clean5 <- pa_clean4 %>% 
+  "WRITE_YOUR_CODE_HERE"
+```
+
+## Step 6: Create a Boolean variable
+
+The `who_recommendation` variable uses "Yes" and "No" to indicate whether or not WHO recommendations for physical activity are being met.
+
+Create a Boolean variable called `met_recommendation` that is set to `TRUE` if the individual met WHO recommendations.
+
+Save the updated dataset as a new data frame called `pa_clean_final`.
+
+```{r}
+pa_clean_final <- pa_clean5 %>% 
+  "WRITE_YOUR_CODE_HERE"
+```
+
+Finally, make a table to display the number of adults and children who met or did not meet the WHO recommendations. 
+
+How many adults and children did not meet the recommended standard? And how many did meet it?
+
+```{r}
+pa_tabyl <- "WRITE_YOUR_CODE_HERE"
+```
+
+# Visualize data with {esquisse}
+
+In this section you will use `pa_clean_final` to generate some plots!
+
+## Plot 1: Histogram
+
+Histograms are used to visualize the distribution of a single numeric (continuous) variable. Chose a variable from the dataset that you can plot a histogram with.
+
+Using esquisse, create your own histogram. (TIP: If you're stuck, check out the histogram example located in your `rmd` folder titled, `plot_1_example.jpg` for some inspiration!)
+
+```{r}
+"PASTE_THE_ESQUISSE_CODE_HERE"
+```
+
+## Plot 2: Boxplot
+
+Boxplots are used to visualize the distribution of a numeric variable (preferably the same one used for Plot 1), split by the values of a discrete/categorical variable.
+
+Use esquisse to create a boxplot to show the distribution of a numeric variable. 
+
+Use the same variable used for your histogram on your x axis, and plot it against a categorical variable on your y axis.
+
+Set fill color to match the values of your categorical variable.
+
+TIP: There is also a boxplox example located in your `rmd` folder titled, `plot_2_example.jpg`. Study the image closely and try to create something similar.
+
+```{r}
+"PASTE_THE_ESQUISSE_CODE_HERE"
+```
+
+# Wrap up
+
+That's it for this assignment! We will choose 2-3 people to present your work during the workshop. If you would like to share your results with the class, please let an instructor know.
+
+The group representative should prepare to screenshare and give a short (3-4 sentence) presentation.
+
+Choose and highlight one aspect of your code or plot that would be helpful and interesting to the class.
+
+For example, you can choose a question that your group found especially tricky, and explain how you found the solution. 
+
+Or you can display one of your plots, and share some tips for additional customization.
+
+# Submit
+
+Once you have finished the tasks above, you should save your answers and upload your assignment Rmd on the workshop webpage. 
+
+# Note about pipe chains
+
+In this exercise, we have created multiple intermediate data frames while cleaning the dataset, like `pa_clean1`, `pa_clean2`, and so on.
+
+Note that this is not best practice; it is only done here to make it easier for you to follow along and complete the assignment. 
+
+In practice, you would typically clean your data in just a few long pipe chains.
+
+As an example, here is how you might make a number of modifications to the dplyr::starwars dataset: 
+
+```{r}
+dplyr::starwars %>%
+  # Select name, height, mass, species
+  select(name, height, mass, species) %>%
+  # Rename the mass variable to mass_kg
+  rename(mass_kg = mass) %>%
+  # Keep only the human species
+  filter(species == "Human") %>%
+  # Convert height to meters
+  mutate(height_m = height / 100) %>%
+  # Calculate BMI
+  mutate(bmi = mass_kg / height_m^2) %>%
+  # Classify BMI categories
+  mutate(bmi_category = case_when(
+    bmi < 18.5 ~ "Underweight",
+    bmi >= 18.5 & bmi < 25 ~ "Normal weight",
+    bmi >= 25 ~ "Overweight"
+  ))
+```

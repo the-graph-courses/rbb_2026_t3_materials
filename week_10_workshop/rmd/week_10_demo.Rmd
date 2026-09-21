@@ -1,0 +1,199 @@
+---
+title: "Week 10 Teacher Demo: Exploring DHS data with {ggplot2}"
+subtitle: "Introduction to the {haven} package and ggplot themes"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    toc: true
+author: "GRAPH Courses Team"
+date: "2024-09-10"
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r echo = F}
+knitr::opts_chunk$set(warning = F, message = F)
+```
+
+# Demographic and Health Survey (DHS) data
+
+The Demographic and Health Surveys (DHS) are a series of standardized surveys conducted periodically in developing countries that collect data on various aspects of population, health, and nutrition. You will be using DHS data for the final project of this course, so this is a chance to practice working with this type of data.
+
+## Nigeria Women's Individual Recode, 2018
+
+Several DHS datasets (called recodes) are made available from each survey. The ***individual recode (IR)*** dataset contains individual-level data on women aged 15 to 49 in the surveyed households. You will be using a women's IR dataset for this workshop and for your individual final project.
+
+Today we will be looking at women's individual recode (IR) data from **Nigeria (2018)**. Key findings from this data can be found in this [report](https://drive.google.com/file/d/10pp9O9EJZvideynYyANqJtBCsN_vNQjs/view).
+
+# Importing data with `{haven}` functions
+
+DHS data comes in the form of a **.DTA file** (STATA format). To import the DHS dataset from the .DTA format into R, you will need the `read_dta()` function from the `{haven}` package.
+
+Let's start by loading in the needed packages.
+
+```{r}
+# Load packages
+pacman::p_load(
+  janitor, # data analysis utilities
+  here, # force rmds to use the project folder as working directory
+  haven, # for reading in stata files
+  tidyverse # for everything!
+  )
+```
+
+DHS files can be quite large -- the original Nigeria 2018 data has over 40,000 rows and 5,000 columns. When datasets are that large, you need to avoid importing the entire dataset at once, as this may take unreasonably long to run and may cause R to freeze.
+
+Instead, you can first select which variables you want to analyze and then import only those columns from the .dta file. This is not how we usually do it, but in this case we have a good reason.
+
+## Identifying variables of interest
+
+Before importing the data, we must select which columns to include. In order to perform some descriptive data analysis, we will need to include some socio-demographic variables related to the topic of our choosing. For today's workshop, we will choose the topic of fertility and reproductive timing.
+
+If you look in your "data" folder of this workshop, you will see a file named NGIR7BFL_mini.DTA, which contains the IR data we want to use. Consult the data dictionary (**NGIR7BFL_data_dictionary.pdf**) in the "data" folder to identify the variables of interest based on their descriptions.
+
+## Importing only selected variables with `col_select`
+
+Below I use the **`col_select`** argument of **`read_dta()`** to specify which columns to import. For this demo, we will select basic socio-demographic variables (age, location, education, etc.) and a few additional variables related to fertility and reproductive timing among women in Nigeria.
+
+**IMPORTANT**: The data dictionary lists column names in all caps, but they are lowercase in the actual file. Remember to change letters to *lowercase*.
+
+```{r}
+# Reading in the .dta file
+ir_raw <- 
+  haven::read_dta(here("data/NGIR7BFL_mini.DTA"),
+                  
+                  # Provide a vector of column names
+                  col_select = c(
+                    # Basic socio-demographic variables
+                    v006, v007, v009, v010, v012, v013, 
+                    v024, v025, v106, v130, v190,   
+                    # Fertility and reproductive timing
+                    v201, v212, v213, v511, v531))
+```
+
+***Note** - for this workshop, we created a "mini" version of the Nigeria dataset that has only the first 1000 rows, but in your actual final project you will be expected to work with all rows in the DTA file.*
+
+```{r}
+# Look at a preview of the raw data frame
+head(ir_raw)
+```
+
+## Checking Variables
+
+Before we can proceed to use those variables, it is important for us to first see if those variables contain enough data for data analysis. We can do this by using the `diagnose()` function from the {dlookr} package. This function allows us to look at the number of missing values for each of the selected variables.
+
+```{r}
+# Load the dlookr package
+pacman::p_load(dlookr)
+
+# Use the `diagnose()` function to see the missing value count
+diagnose(ir_raw)
+```
+
+In this case, we notice that the variables with missing values are `v212` and `v511` but only with 28.9% and 24.7% of the total values that are missing. This gives us enough values to use continue with the descriptive analysis.
+
+## Renaming Variables
+
+Since the DHS variable names are not very descriptive (like v000 and v001), we will use `rename()` to give them short, descriptive titles.
+
+```{r}
+# Renaming the variables
+ir_renamed <- 
+  ir_raw %>% 
+  rename(mth_interview = v006,
+         yr_interview = v007,
+         mth_birth = v009,
+         yr_birth = v010,
+         age = v012,
+         age_group = v013,
+         region = v024,
+         urban_rural = v025,
+         highest_educ = v106,
+         religion = v130,
+         wealth_index = v190,
+         num_kids = v201,
+         age_first_birth = v212,
+         curr_pregnant = v213,
+         age_first_cohabitation = v511,
+         age_first_sex = v531)
+```
+
+Now the variables names are much more helpful:
+
+```{r}
+# Look at a preview of the renamed data frame
+head(ir_renamed)
+```
+
+## Fixing the Variable Type
+
+Another note on importing data: the `read_dta()` function reads in factor data as a special data type called **labelled** data.
+
+```{r}
+# Note the data class of each variable
+glimpse(ir_renamed)
+```
+
+Several variables are of class "**`dbl+lbl`**". This mean the columns display only numbers, and each number corresponds to a survey answer.
+
+This is cryptic and can be problematic for later analysis, so we recommend converting these to regular R factors using the function **`haven::as_factor()`**. This will replace the numbers with the corresponding text label.
+
+```{r}
+# Convert from labelled data to regular factors
+ir_clean <- 
+  ir_renamed %>% 
+  haven::as_factor()
+```
+
+**NOTE**: There is another function called `as_factor()` from the {forcats} package, and one called `as.factor()` from {base} R. **Remember to add "`haven::`" before `as_factor()` to make sure you're using the correct function for .dta files.**
+
+Now you can see that the variables that were previously "`dbl+lbl`" are now "`fct`" (factor) and the numbers are replaced with descriptive text.
+
+```{r}
+# Review data classes of the newly converted variables
+glimpse(ir_clean)
+```
+
+# Setting a custom `{ggplot2}` theme
+
+You can customize the non-data elements of your plot with **`theme_*()`** functions. `{ggplot2}` includes eight default themes, as shown in the image below. You might recognize some of them from your `{esquisse}` days.
+
+![](images/visualization_themes.png)
+
+We can modify the overall look of a plot by simply adding a `theme_*()` function at the end of your plotting code, like so:
+
+```{r}
+ggplot(data = ir_clean,
+   mapping = aes(x = highest_educ, 
+                 y = age_first_birth, 
+                 fill = urban_rural)) +
+   geom_boxplot() +
+   theme_classic()
+```
+
+As well as applying themes to one plot at a time, you can change the global default theme with `theme_set()`. For example, if you run `theme_set(theme_bw())` it will use a white background with grid lines for all plots.
+
+```{r}
+# Set global ggplot theme
+theme_set(theme_bw())
+```
+
+Now when we run the same code again (without a `theme_*()` function), it will apply the theme we set above.
+
+```{r}
+ggplot(data = ir_clean,
+   mapping = aes(x = highest_educ, 
+                 y = age_first_birth, 
+                 fill = urban_rural)) +
+   geom_boxplot()
+```
+
+Any new plots will also be affected by `theme_set()`.
+
+```{r}
+ggplot(data = ir_clean,
+  mapping = aes(
+    x = highest_educ,
+    fill = urban_rural)) +
+  geom_bar()
+```

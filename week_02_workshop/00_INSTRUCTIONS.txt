@@ -1,0 +1,8 @@
+QUICK START WORKSHOP INSTRUCTIONS.
+
+1. Choose one of these three datasets to explore. You can skim "01_info_about_the_datasets.pdf" to learn more about each dataset.
+   - Febrile Diseases Burkina Faso
+   - Motorcycle Accidents in Colombia  
+   - COVID-19 Patients in the US
+
+2. Open the corresponding script from the "scripts" folder, and complete the assignment by filling in the steps in that script. You can refer to the TEACHER_DEMO script to get some clues.
